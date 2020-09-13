@@ -12,9 +12,8 @@ logger = getLogger(__name__)
 
 
 def get_secret(secret:str)->str:
-    keyVaultName = os.environ["KEY_VAULT_NAME"]
     credential = DefaultAzureCredential()
-    KVUri = f"https://{keyVaultName}.vault.azure.net"
+    KVUri = f"https://rethink-keyvault.vault.azure.net"
     client = SecretClient(vault_url=KVUri, credential=credential)
     retrieved_secret = client.get_secret(secret)
     return retrieved_secret.value
