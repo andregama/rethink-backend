@@ -11,12 +11,30 @@ from azure.identity import DefaultAzureCredential
 logger = getLogger(__name__)
 
 
+
 def get_secret(secret:str)->str:
     credential = DefaultAzureCredential()
     KVUri = f"https://rethink-keyvault.vault.azure.net"
     client = SecretClient(vault_url=KVUri, credential=credential)
     retrieved_secret = client.get_secret(secret)
     return retrieved_secret.value
+
+def get_db_uri():
+    server = "rethink-db.database.windows.net"
+    database = "rethink-bd"
+    username = get_secret("rethinkdb-username")
+    password = get_secret("rethinkdb-password")
+
+    driver = '{ODBC Driver 17 for SQL Server}'
+
+    odbc_str = 'DRIVER='+driver+';SERVER='+server+';PORT=1433;UID='+username+';DATABASE='+ database + ';PWD='+ password
+    return 'mssql+pyodbc:///?odbc_connect=' + urllib.parse.quote_plus(odbc_str)
+
+
+db_uri = get_db_uri()
+engine = create_engine(db_uri)
+Session = sessionmaker(bind=engine)
+
 
 def start_session():
     server = "rethink-db.database.windows.net"
@@ -29,9 +47,11 @@ def start_session():
     odbc_str = 'DRIVER='+driver+';SERVER='+server+';PORT=1433;UID='+username+';DATABASE='+ database + ';PWD='+ password
     connect_str = 'mssql+pyodbc:///?odbc_connect=' + urllib.parse.quote_plus(odbc_str)
 
-    engine = create_engine(connect_str)
+    # engine = create_engine(connect_str)
 
-    Session = sessionmaker(bind=engine)
+    # Session = sessionmaker(bind=engine)
+    # session = Session()
+    # event.listen(session, "after_flush", log_updates)
     session = Session()
     event.listen(session, "after_flush", log_updates)
 

@@ -1,8 +1,9 @@
 import re
 from datetime import datetime
 import enum
-from database.connect import *
 # from connect import *
+from database.connect import *
+# from mybaseclass import MyBase
 from database.mybaseclass import MyBase
 
 
@@ -14,7 +15,6 @@ from sqlalchemy.orm import backref, relationship
 # from sqlalchemy_utils import EmailType
 
 Base = declarative_base(cls=MyBase)
-
 
 class Customer(Base):
     __tablename__ = 'customers'
@@ -35,8 +35,19 @@ class Customer(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     last_updated_at = Column(DateTime)
 
+
     def __str__(self):
         return '<Customer {0}: {1}>'.format(self.id, self.email)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "accountId": self.account_id,
+            "email": self.email,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "phone": self.phone
+        }
 
 class GoalType(Base):
     __tablename__ = 'goal_type'

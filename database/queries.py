@@ -1,6 +1,6 @@
-from database.connect import start_session
 # from connect import start_session
-# from database.schema import Customer
+from database.connect import start_session
+# from schema import Customer
 from database.schema import Customer
 
 from functools import wraps
@@ -35,8 +35,8 @@ def commit_session(_raise=True):
             raise
 
 def get_customers():
-    return session.query(Customer). \
-        all()
+    customers = session.query(Customer).all()
+    return [customer.to_json() for customer in customers]
 
 
 

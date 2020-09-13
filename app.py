@@ -1,10 +1,12 @@
-from flask import Flask
+from flask import Flask, jsonify
 import pyodbc
 # from database.connect import *
 from database.schema import Customer
 from database.queries import *
 
+from util.all import json_response
 app = Flask(__name__)
+
 
 @app.route("/")
 def index():
@@ -13,4 +15,7 @@ def index():
 
 @app.route("/test")
 def test():
-    return str(get_customers())
+    return json_response(get_customers())
+
+if __name__ == '__main__':
+    app.run(debug=True)
