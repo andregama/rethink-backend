@@ -6,7 +6,7 @@ from database.connect import *
 # from mybaseclass import MyBase
 from database.mybaseclass import MyBase
 import uuid
-
+import simplejson as json
 
 
 # from mybaseclass import MyBase
@@ -38,14 +38,9 @@ class Customer(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     last_updated_at = Column(DateTime, default=datetime.utcnow), 
 
-
-    def __str__(self):
-        return '<Customer {0}: {1}>'.format(self.id, self.email)
-
     def to_json(self):
         return {
             "id": self.id,
-            "accountId": self.account_id,
             "email": self.email,
             "first_name": self.first_name,
             "last_name": self.last_name,
@@ -60,6 +55,15 @@ class GoalType(Base):
     title =  Column(String(50), nullable=False, unique=True)
     description = Column(String(100))
     image = Column(String(150))
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "image": self.image
+        }
+
 
 class Goal(Base):
     __tablename__ = 'goal'
@@ -77,12 +81,33 @@ class Goal(Base):
     active = Column(Boolean, nullable=False, default=True)
     description = Column(String(200))
 
+    def to_json(self):
+        return {
+            "id": self.id,
+            "parent_id": self.parent_id,
+            "customer_id": self.customer_id,
+            "goal_type_id": self.goal_type_id,
+            "title": self.title,
+            "amount": self.amount,
+            "completed": self.completed,
+            "active": self.active,
+            "description": self.description
+        }
+
+
 class InvestmentType(Base):
     __tablename__ = 'investment_type'
 
     id = Column(Integer, primary_key=True)
     title = Column(String(80), nullable=False)
     description = Column(String(200))
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description
+        }
 
 class Investment(Base):
     __tablename__ = 'investment'
@@ -93,12 +118,51 @@ class Investment(Base):
     investment_type_id = Column(Integer, ForeignKey('investment_type.id'))
     investment_type = relationship('InvestmentType', backref=backref("investment", lazy="joined"))
 
+    def to_json(self):
+        return {
+            "id": self.id,
+            "customer_id": self.customer_id,
+            "investment_type_id": self.investment_type_id
+        }
+
 
 class Transaction(Base):
     __tablename__ = 'transactions'
+
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
+    customer_id = Column(UUID(as_uuid=True), ForeignKey('customers.id'))
+    customer = relationship('Customer', backref=backref ("transaction", lazy="joined"))
     investment_id = Column(UUID(as_uuid=True), ForeignKey('investment.id'))
     investment = relationship('Investment', backref=backref ("transactions", lazy="joined"))
     amount = Column(Numeric, nullable=False)
     goal_id = Column(UUID(as_uuid=True), ForeignKey('goal.id'))
     goal = relationship('Goal', backref=backref ("transactions", lazy="joined"))
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "customer_id": self.customer_id,
+            "investment_id": self.investment_id,
+            "amount": self.amount,
+            "goal_id": self.goal_id
+        }
+
+class Balance(Base):
+    __tablename__ = 'balance'
+    
+    id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
+    customer_id = Column(UUID(as_uuid=True), ForeignKey('customers.id'))
+    customer = relationship('Customer', backref=backref ("balance", lazy="joined"))
+    amount = Column(Numeric, nullable=False)
+    balance_type = Column(String(50), nullable=False)
+    date_time = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "customer_id": self.customer_id,
+            "amount": self.amount,
+            "balance_type": self.balance_type,
+            "date_time": self.date_time
+        }
+
